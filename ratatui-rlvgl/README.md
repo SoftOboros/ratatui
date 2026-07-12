@@ -20,6 +20,7 @@ Version 0.1 uses rlvgl's deterministic `FONT_6X10` rasterizer and a fixed
 256-color palette; RGB values pass through unchanged. Reversed, hidden,
 underlined, crossed-out, bold, and dim modifiers have static graphical
 mappings. Italic and blink modifiers are accepted but intentionally render as
-their non-animated upright equivalents. The backend targets fullscreen and
-fixed viewports; terminal scrollback and inline `append_lines` behavior are
-outside the initial bridge.
+their non-animated upright equivalents. Unicode box-drawing glyphs degrade to
+ASCII `+`, `-`, and `|` with `FONT_6X10`; other unsupported non-ASCII glyphs
+render as `?`. The backend targets fullscreen and fixed viewports; terminal
+scrollback and inline `append_lines` behavior are outside the initial bridge.
