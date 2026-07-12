@@ -1,0 +1,22 @@
+[package]
+name = "ratatui-rlvgl"
+version = "0.1.0"
+description = "no_std Ratatui backend and rlvgl widget bridge."
+documentation = "https://docs.rs/ratatui-rlvgl"
+readme = "README.md"
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+license.workspace = true
+exclude.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+ratatui-core.workspace = true
+rlvgl-core = { version = "0.2.4", default-features = false }
+unicode-width.workspace = true
+
+[lints]
+workspace = true

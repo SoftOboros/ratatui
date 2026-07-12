@@ -2910,6 +2910,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "ratatui-rlvgl"
+version = "0.1.0"
+dependencies = [
+ "ratatui-core",
+ "rlvgl-core",
+ "unicode-width",
+]
+
+[[package]]
 name = "ratatui-state-examples"
 version = "0.0.0"
 dependencies = [
@@ -3069,6 +3078,12 @@ dependencies = [
  "untrusted",
  "windows-sys 0.52.0",
 ]
+
+[[package]]
+name = "rlvgl-core"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9045626503c68f3897b44f287c8b526e26ba7f778d90cce657249e57d4d8a3d9"
 
 [[package]]
 name = "rsa"
