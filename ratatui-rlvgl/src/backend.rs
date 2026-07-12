@@ -22,12 +22,13 @@ pub struct CellMetrics {
 }
 
 impl CellMetrics {
-    /// Metrics matching rlvgl's built-in `FONT_6X10` bitmap font.
+    /// Metrics matching rlvgl's built-in `FONT_6X10` bitmap font at its
+    /// configured 2× display scale.
     pub const fn font_6x10() -> Self {
         Self {
-            width: 6,
-            height: 10,
-            baseline: 10,
+            width: 12,
+            height: 20,
+            baseline: 20,
         }
     }
 
@@ -525,7 +526,7 @@ mod tests {
             backend.window_size().unwrap(),
             WindowSize {
                 columns_rows: Size::new(80, 24),
-                pixels: Size::new(480, 240)
+                pixels: Size::new(960, 480)
             }
         );
     }

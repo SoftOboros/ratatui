@@ -16,7 +16,8 @@ an rlvgl widget tree. The view can be the main content widget or a child pane
 inside a native graphical screen.
 
 Version 0.1 uses rlvgl's deterministic `FONT_6X10` rasterizer and a fixed
-6×10-pixel grid. Ratatui named colors and indexed colors use the same xterm
+12×20-pixel grid matching that font's configured 2× display scale. Ratatui
+named colors and indexed colors use the same xterm
 256-color palette; RGB values pass through unchanged. Reversed, hidden,
 underlined, crossed-out, bold, and dim modifiers have static graphical
 mappings. Italic and blink modifiers are accepted but intentionally render as

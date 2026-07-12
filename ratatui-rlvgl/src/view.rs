@@ -272,6 +272,9 @@ fn draw_cell(
         width: i32::from(metrics.width()).saturating_mul(i32::from(span)),
         height: i32::from(metrics.height()),
     };
+    let glyph_y = py
+        .saturating_add(i32::from(metrics.baseline()))
+        .saturating_sub(FONT_6X10.scaled_height());
     renderer.fill_rect(cell_rect, background);
     let mut clipped = ClipRenderer::new(renderer, cell_rect);
     if !cell.modifier.contains(Modifier::HIDDEN) {
@@ -285,11 +288,7 @@ fn draw_cell(
             FONT_6X10.draw_char(
                 &mut clipped,
                 px.saturating_add((index as i32).saturating_mul(i32::from(metrics.width()))),
-                py + i32::from(
-                    metrics
-                        .baseline()
-                        .saturating_sub(FONT_6X10.glyph_height.into()),
-                ),
+                glyph_y,
                 ch,
                 foreground,
             );
@@ -306,11 +305,7 @@ fn draw_cell(
                     &mut clipped,
                     px.saturating_add(1)
                         .saturating_add((index as i32).saturating_mul(i32::from(metrics.width()))),
-                    py + i32::from(
-                        metrics
-                            .baseline()
-                            .saturating_sub(FONT_6X10.glyph_height.into()),
-                    ),
+                    glyph_y,
                     ch,
                     foreground,
                 );
@@ -384,7 +379,7 @@ mod tests {
     use rlvgl_core::widget::Color;
 
     use super::*;
-    use crate::{CellRect, RlvglBackend};
+    use crate::{CellRect, RlvglBackend, SurfaceDefaults};
 
     #[derive(Default)]
     struct RecordingRenderer {
@@ -409,8 +404,8 @@ mod tests {
             Rect {
                 x: 10,
                 y: 20,
-                width: 12,
-                height: 10,
+                width: 24,
+                height: 20,
             },
             surface,
         );
@@ -420,10 +415,18 @@ mod tests {
             == Rect {
                 x: 10,
                 y: 20,
-                width: 6,
-                height: 10
+                width: 12,
+                height: 20
             }));
         assert!(renderer.fills.len() > 2, "glyph pixels should be drawn");
+        let foreground = SurfaceDefaults::default().foreground;
+        assert!(
+            renderer
+                .fills
+                .iter()
+                .any(|(rect, color)| *color == foreground && rect.y < 30),
+            "glyph must occupy the upper half of its 20-pixel cell"
+        );
     }
 
     #[test]
@@ -446,18 +449,18 @@ mod tests {
             Rect {
                 x: 5,
                 y: 7,
-                width: 24,
-                height: 30,
+                width: 48,
+                height: 60,
             },
             surface,
         );
         assert_eq!(
             view.dirty_pixel_rect(),
             Some(Rect {
-                x: 17,
-                y: 17,
-                width: 6,
-                height: 10
+                x: 29,
+                y: 27,
+                width: 12,
+                height: 20
             })
         );
     }
@@ -469,8 +472,8 @@ mod tests {
             Rect {
                 x: 10,
                 y: 20,
-                width: 24,
-                height: 30,
+                width: 48,
+                height: 60,
             },
             surface,
         );
@@ -479,16 +482,16 @@ mod tests {
         view.set_on_input(Some(Box::new(move |input| {
             *seen_callback.borrow_mut() = Some(input);
         })));
-        assert!(view.handle_event(&Event::PressRelease { x: 23, y: 31 }));
+        assert!(view.handle_event(&Event::PressRelease { x: 35, y: 51 }));
         assert_eq!(
             *seen.borrow(),
             Some(RlvglInput::Pointer {
                 kind: PointerKind::Release,
-                pixel: (13, 11),
+                pixel: (25, 31),
                 cell: (2, 1)
             })
         );
-        assert!(!view.handle_event(&Event::PressRelease { x: 40, y: 31 }));
+        assert!(!view.handle_event(&Event::PressRelease { x: 70, y: 31 }));
     }
 
     #[test]
