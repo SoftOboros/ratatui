@@ -275,7 +275,13 @@ fn draw_cell(
     renderer.fill_rect(cell_rect, background);
     let mut clipped = ClipRenderer::new(renderer, cell_rect);
     if !cell.modifier.contains(Modifier::HIDDEN) {
-        for (index, ch) in cell.symbol().chars().take(usize::from(span)).enumerate() {
+        for (index, ch) in cell
+            .symbol()
+            .chars()
+            .take(usize::from(span))
+            .map(bitmap_font_fallback)
+            .enumerate()
+        {
             FONT_6X10.draw_char(
                 &mut clipped,
                 px.saturating_add((index as i32).saturating_mul(i32::from(metrics.width()))),
@@ -289,7 +295,13 @@ fn draw_cell(
             );
         }
         if cell.modifier.contains(Modifier::BOLD) {
-            for (index, ch) in cell.symbol().chars().take(usize::from(span)).enumerate() {
+            for (index, ch) in cell
+                .symbol()
+                .chars()
+                .take(usize::from(span))
+                .map(bitmap_font_fallback)
+                .enumerate()
+            {
                 FONT_6X10.draw_char(
                     &mut clipped,
                     px.saturating_add(1)
@@ -328,6 +340,20 @@ fn draw_cell(
             },
             foreground,
         );
+    }
+}
+
+/// Preserve Ratatui's box layout when the selected embedded bitmap font only
+/// contains ASCII. Richer rlvgl fonts can replace this policy in a future
+/// configurable cell renderer without changing the backend contract.
+const fn bitmap_font_fallback(character: char) -> char {
+    match character {
+        '─' | '━' | '═' | '╌' | '╍' | '┄' | '┅' | '┈' | '┉' => '-',
+        '│' | '┃' | '║' | '╎' | '╏' | '┆' | '┇' | '┊' | '┋' => '|',
+        '┌' | '┐' | '└' | '┘' | '├' | '┤' | '┬' | '┴' | '┼' | '╔' | '╗' | '╚' | '╝' | '╠' | '╣'
+        | '╦' | '╩' | '╬' => '+',
+        character if character.is_ascii() => character,
+        _ => '?',
     }
 }
 
@@ -463,5 +489,13 @@ mod tests {
             })
         );
         assert!(!view.handle_event(&Event::PressRelease { x: 40, y: 31 }));
+    }
+
+    #[test]
+    fn maps_unicode_box_drawing_to_ascii_bitmap_glyphs() {
+        assert_eq!(bitmap_font_fallback('─'), '-');
+        assert_eq!(bitmap_font_fallback('│'), '|');
+        assert_eq!(bitmap_font_fallback('┼'), '+');
+        assert_eq!(bitmap_font_fallback('λ'), '?');
     }
 }
