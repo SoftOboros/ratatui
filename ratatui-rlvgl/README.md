@@ -23,5 +23,8 @@ underlined, crossed-out, bold, and dim modifiers have static graphical
 mappings. Italic and blink modifiers are accepted but intentionally render as
 their non-animated upright equivalents. Unicode box-drawing glyphs degrade to
 ASCII `+`, `-`, and `|` with `FONT_6X10`; other unsupported non-ASCII glyphs
-render as `?`. The backend targets fullscreen and fixed viewports; terminal
-scrollback and inline `append_lines` behavior are outside the initial bridge.
+render as `?`. The backend targets fullscreen and fixed viewports only —
+`Viewport::Inline` and the `scrolling-regions` feature's scroll-region
+methods are an intentional non-goal, not a gap: an embedded display has no
+"scrollback above the viewport" surface for inline mode to be correct about.
+See `RATATUI-00-CONCEPTS.md` §9 for the ratified rationale.
