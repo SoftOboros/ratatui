@@ -32,6 +32,26 @@ impl CellMetrics {
         }
     }
 
+    /// Metrics matching the RATATUI-00 §6 curated-Unicode, anti-aliased
+    /// `PackedFont` terminal family (see [`crate::fonts`]), packed from
+    /// `DejaVu` Sans Mono at 17pt.
+    ///
+    /// Not 12×20 like [`Self::font_6x10`]: `DejaVu` Sans Mono's natural
+    /// glyph-box proportions do not round cleanly onto that grid at any
+    /// integer point size (RATATUI-00-CONCEPTS.md §6.1 explicitly allows a
+    /// new constructor for this case). At 17pt, the curated repertoire's
+    /// widest glyph — the oblique/bold-oblique variants' sheared `X` and
+    /// several box-drawing/arrow glyphs — needs up to 14px of width, and
+    /// the full vertical extent from the highest ascender (`│`) to the
+    /// lowest descender ink (`_`) spans 21px around the baseline.
+    pub const fn packed_terminal() -> Self {
+        Self {
+            width: 14,
+            height: 21,
+            baseline: 16,
+        }
+    }
+
     /// Cell width in pixels.
     pub const fn width(self) -> u16 {
         self.width

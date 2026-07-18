@@ -11,6 +11,7 @@ extern crate alloc;
 
 mod backend;
 mod color;
+pub mod fonts;
 mod view;
 
 pub use backend::{
