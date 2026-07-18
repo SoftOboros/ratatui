@@ -138,6 +138,10 @@ pub(crate) struct SurfaceState {
     pub(crate) dirty: Option<CellRect>,
     pub(crate) generation: u64,
     pub(crate) published: bool,
+    /// Shared blink-phase toggle (RATATUI-00 §8). `true` renders blinking
+    /// glyphs; `false` suppresses them (background only). Advanced only by
+    /// [`RatatuiSurface::advance_blink_phase`] — never a wall clock.
+    pub(crate) blink_phase: bool,
 }
 
 /// Shared retained cell surface written by [`RlvglBackend`] and painted by
@@ -183,6 +187,25 @@ impl RatatuiSurface {
 
     pub(crate) fn mark_clean(&self) {
         self.0.borrow_mut().dirty = None;
+    }
+
+    /// Flip the shared blink phase and mark the full surface dirty
+    /// (RATATUI-00 §8).
+    ///
+    /// Caller-driven only — never a wall clock, `Instant`, or OS timer.
+    /// Consuming applications wire this to whatever tick source they
+    /// already own (the SCTD demo's Auto-tick cadence is the reference
+    /// first consumer). The effect is observable through the existing
+    /// [`generation`](Self::generation)/[`dirty_cells`](Self::dirty_cells)
+    /// API once [`RlvglBackend::flush`] republishes the surface — no new
+    /// accessor is added for this purpose. Mirrors the "mutate state,
+    /// mark full-dirty, unpublish" pattern used by
+    /// [`RlvglBackend::set_defaults`] and [`RlvglBackend::resize`].
+    pub fn advance_blink_phase(&self) {
+        let mut state = self.0.borrow_mut();
+        state.blink_phase = !state.blink_phase;
+        state.dirty = Some(full_rect(&state.buffer));
+        state.published = false;
     }
 }
 
@@ -239,6 +262,7 @@ impl RlvglBackend {
             dirty: Some(full),
             generation: 0,
             published: true,
+            blink_phase: true,
         })));
         Ok((
             Self {
@@ -537,6 +561,33 @@ mod tests {
         assert_eq!(surface.cell(1, 0).unwrap().symbol(), " ");
         assert_eq!(surface.cell(2, 0).unwrap().symbol(), " ");
         assert_eq!(surface.cell(0, 1).unwrap().symbol(), "X");
+    }
+
+    #[test]
+    fn advance_blink_phase_marks_full_dirty_and_unpublishes() {
+        let (mut backend, surface) = RlvglBackend::new(3, 2, CellMetrics::font_6x10()).unwrap();
+        backend.flush().unwrap();
+        surface.mark_clean();
+        let generation_before = surface.generation();
+
+        surface.advance_blink_phase();
+
+        // Mirrors set_defaults/resize: the mutation unpublishes immediately,
+        // so it is not yet observable until the next flush.
+        assert_eq!(surface.dirty_cells(), None);
+        assert_eq!(surface.cell(0, 0), None);
+
+        backend.flush().unwrap();
+        assert_eq!(
+            surface.dirty_cells(),
+            Some(CellRect {
+                x: 0,
+                y: 0,
+                width: 3,
+                height: 2,
+            })
+        );
+        assert!(surface.generation() > generation_before);
     }
 
     #[test]

@@ -17,4 +17,4 @@ mod view;
 pub use backend::{
     CellMetrics, CellRect, RatatuiSurface, RlvglBackend, RlvglBackendError, SurfaceDefaults,
 };
-pub use view::{InputKey, PointerKind, RatatuiView, RlvglInput};
+pub use view::{InputKey, PointerKind, RatatuiTerminalFont, RatatuiView, RlvglInput};
