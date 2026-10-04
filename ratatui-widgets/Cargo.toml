@@ -25,6 +25,9 @@ default = ["all-widgets"]
 ## enables std
 std = ["serde?/std", "time?/local-offset"]
 
+## enables shared shadow effects on targets without native atomic pointer operations.
+portable-atomic = ["dep:portable-atomic-util", "ratatui-core/portable-atomic"]
+
 ## enables serialization and deserialization of style and color types using the [`serde`] crate.
 ## This is useful if you want to save themes to a file.
 serde = ["dep:serde", "ratatui-core/serde"]
@@ -56,6 +59,7 @@ instability.workspace = true
 itertools.workspace = true
 line-clipping.workspace = true
 ratatui-core = { workspace = true }
+portable-atomic-util = { version = "0.2.5", default-features = false, features = ["alloc"], optional = true }
 serde = { workspace = true, optional = true }
 strum.workspace = true
 time = { workspace = true, optional = true }

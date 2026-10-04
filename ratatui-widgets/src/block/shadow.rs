@@ -1,7 +1,14 @@
+//! Block shadow effects with feature-selected shared ownership for no-atomic targets.
+
+#[cfg(feature = "portable-atomic")]
+use alloc::boxed::Box;
+#[cfg(not(feature = "portable-atomic"))]
 use alloc::sync::Arc;
 use core::hash::{Hash, Hasher};
 use core::panic::{RefUnwindSafe, UnwindSafe};
 use core::{fmt, ptr};
+#[cfg(feature = "portable-atomic")]
+use portable_atomic_util::Arc;
 
 use ratatui_core::buffer::Buffer;
 use ratatui_core::layout::{Offset, Position, Rect};
@@ -249,8 +256,13 @@ impl Shadow {
     /// The effect receives the shadow area, the original block area, and the target buffer. It is
     /// called after the shadow style has been applied.
     pub fn custom<F: CellEffect + 'static>(effect: F) -> Self {
+        // Portable Arc cannot use stable implicit unsizing; coerce through Box.
+        #[cfg(feature = "portable-atomic")]
+        let effect = Arc::from(Box::new(effect) as Box<dyn CellEffect>);
+        #[cfg(not(feature = "portable-atomic"))]
+        let effect = Arc::new(effect);
         Self {
-            effect: Effect::Custom(Arc::new(effect)),
+            effect: Effect::Custom(effect),
             style: Style::default(),
             offset: Offset::new(1, 1),
         }
